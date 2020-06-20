@@ -2,12 +2,18 @@ import UIKit
 import SceneKit
 import ARKit
 
+enum BallType : Int {
+    case mother = 1
+    case target = 2
+}
+
 class MainViewController: UIViewController {
 
     @IBOutlet var sceneView: ARSCNView!
     var start: CGPoint?
     var end: CGPoint?
     var motherBallNode: SCNNode!
+    var targetBallNode: SCNNode!
     let ballRadius: Float = 0.02
     
     override func viewDidLoad() {
@@ -20,6 +26,7 @@ class MainViewController: UIViewController {
         let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePan(panGesture:)))
         sceneView.addGestureRecognizer(panGesture)
         
+        sceneView.scene.physicsWorld.contactDelegate = self
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -57,7 +64,7 @@ class MainViewController: UIViewController {
             let end3DTranslation = end3D.worldTransform.columns.3
             let start3DTranslation = start3D.worldTransform.columns.3
             motherBallNode.runAction(SCNAction.moveBy(x: CGFloat(end3DTranslation.x - start3DTranslation.x),
-                y: CGFloat(end3DTranslation.y - start3DTranslation.y),
+                y: 0,
                 z: CGFloat(end3DTranslation.z - start3DTranslation.z),
                 duration: 2))
 
@@ -107,7 +114,33 @@ extension MainViewController: ARSCNViewDelegate {
         motherBallNode = SCNNode()
         motherBallNode.position = SCNVector3(planeAnchor.center.x, ballRadius, planeAnchor.center.z)
         motherBallNode.geometry = motherBall
+        motherBallNode.physicsBody = SCNPhysicsBody(type: .kinematic, shape: SCNPhysicsShape(geometry: motherBall, options: nil))
+        motherBallNode.physicsBody?.collisionBitMask = 1
+        motherBallNode.physicsBody?.contactTestBitMask = 1
         
         node.addChildNode(motherBallNode)
+        
+        let targetBall = SCNSphere(radius: CGFloat(ballRadius))
+        let targetBallMaterial = SCNMaterial()
+        targetBallMaterial.diffuse.contents = UIColor.yellow
+        targetBall.materials = [targetBallMaterial]
+        
+        targetBallNode = SCNNode()
+        targetBallNode.position = SCNVector3(planeAnchor.center.x + 0.2, ballRadius, planeAnchor.center.z)
+        targetBallNode.geometry = targetBall
+        targetBallNode.physicsBody = SCNPhysicsBody(type: .kinematic, shape: SCNPhysicsShape(geometry: targetBall, options: nil))
+        targetBallNode.physicsBody?.collisionBitMask = 1
+        targetBallNode.physicsBody?.contactTestBitMask = 1
+        
+        node.addChildNode(targetBallNode)
+        
+        let configuration = ARWorldTrackingConfiguration()
+        sceneView.session.run(configuration)
+    }
+}
+
+extension MainViewController: SCNPhysicsContactDelegate {
+    func physicsWorld(_ world: SCNPhysicsWorld, didBegin contact: SCNPhysicsContact) {
+        
     }
 }
