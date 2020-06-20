@@ -2,11 +2,6 @@ import UIKit
 import SceneKit
 import ARKit
 
-enum BallType : Int {
-    case mother = 1
-    case target = 2
-}
-
 class MainViewController: UIViewController {
 
     @IBOutlet var sceneView: ARSCNView!
@@ -58,15 +53,15 @@ class MainViewController: UIViewController {
             
             guard let startPoint = start, let endPoint = end else { return }
             
-            guard let start3D = sceneView.hitTest(startPoint, types: .estimatedHorizontalPlane).first,
-                let end3D = sceneView.hitTest(endPoint, types: .estimatedHorizontalPlane).first else { return }
+            guard let start3D = sceneView.hitTest(startPoint, types: .existingPlane).first,
+                let end3D = sceneView.hitTest(endPoint, types: .existingPlane).first else { return }
             
             let end3DTranslation = end3D.worldTransform.columns.3
             let start3DTranslation = start3D.worldTransform.columns.3
             motherBallNode.runAction(SCNAction.moveBy(x: CGFloat(end3DTranslation.x - start3DTranslation.x),
                 y: 0,
                 z: CGFloat(end3DTranslation.z - start3DTranslation.z),
-                duration: 2))
+                duration: 2), forKey: "Move")
 
 //            print("start: \(startPoint.x) \(startPoint.y)")
 //            print("end: \(endPoint.x) \(endPoint.y))")
@@ -117,6 +112,7 @@ extension MainViewController: ARSCNViewDelegate {
         motherBallNode.physicsBody = SCNPhysicsBody(type: .kinematic, shape: SCNPhysicsShape(geometry: motherBall, options: nil))
         motherBallNode.physicsBody?.collisionBitMask = 1
         motherBallNode.physicsBody?.contactTestBitMask = 1
+        motherBallNode.name = "mother"
         
         node.addChildNode(motherBallNode)
         
@@ -131,6 +127,7 @@ extension MainViewController: ARSCNViewDelegate {
         targetBallNode.physicsBody = SCNPhysicsBody(type: .kinematic, shape: SCNPhysicsShape(geometry: targetBall, options: nil))
         targetBallNode.physicsBody?.collisionBitMask = 1
         targetBallNode.physicsBody?.contactTestBitMask = 1
+        targetBallNode.name = "target"
         
         node.addChildNode(targetBallNode)
         
@@ -141,6 +138,30 @@ extension MainViewController: ARSCNViewDelegate {
 
 extension MainViewController: SCNPhysicsContactDelegate {
     func physicsWorld(_ world: SCNPhysicsWorld, didBegin contact: SCNPhysicsContact) {
+        var motherBallNode: SCNNode!
+        var targetBallNode: SCNNode!
+        if contact.nodeA.name == "mother" {
+            motherBallNode = contact.nodeA
+            targetBallNode = contact.nodeB
+        }
         
+        if contact.nodeB.name == "mother" {
+            motherBallNode = contact.nodeB
+            targetBallNode = contact.nodeA
+        }
+        
+        motherBallNode.removeAction(forKey: "Move")
+        
+        let normal = contact.contactNormal
+        let dist: Float = 0.05
+        motherBallNode.runAction(SCNAction.moveBy(x: CGFloat(normal.x * dist),
+                                                  y: 0,
+                                                  z: CGFloat(normal.z * dist),
+                                                  duration: 2))
+        
+        targetBallNode.runAction(SCNAction.moveBy(x: CGFloat(-normal.x * dist),
+                                                  y: 0,
+                                                  z: CGFloat(-normal.z * dist),
+                                                  duration: 2))
     }
 }
