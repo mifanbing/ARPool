@@ -11,9 +11,16 @@ extension Float {
 }
 
 extension SCNVector3 {
+    var length: Float {
+        return sqrt(x.power(exponential: 2) + y.power(exponential: 2) + z.power(exponential: 2))
+    }
+    
     var normalized: SCNVector3 {
-        let length = sqrt( x.power(exponential: 2) + y.power(exponential: 2) + z.power(exponential: 2))
         return SCNVector3(x / length, y / length, z / length)
+    }
+    
+    var negative: SCNVector3 {
+        return SCNVector3(-x, -y, -z)
     }
     
     var xzPlane: SCNVector3 {
