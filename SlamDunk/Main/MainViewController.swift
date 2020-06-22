@@ -65,14 +65,9 @@ class MainViewController: UIViewController {
             motherBallNode.runAction(SCNAction.moveBy(x: CGFloat(ballDirection.x * speed * 3),
                                                       y: 0,
                                                       z: CGFloat(ballDirection.z * speed * 3),
-                                                      duration: 3), forKey: "Move")
+                                                      duration: 3), forKey: ObjectCategory.motherBall.nodeName)
             //let speed = sqrt((end3DTranslation.x - start3DTranslation.x).power(exponential: 2) + (end3DTranslation.y - start3DTranslation.y).power(exponential: 2))
             motherBallNode.moved(ballSpeed: speed, ballDirection: ballDirection)
-            //            print("start: \(startPoint.x) \(startPoint.y)")
-            //            print("end: \(endPoint.x) \(endPoint.y))")
-            //
-            //            print("\(start3D.worldTransform.columns.3)")
-            //            print("\(end3D.worldTransform.columns.3)")
         }
         
     }
@@ -96,7 +91,7 @@ extension MainViewController: ARSCNViewDelegate {
         
         setupPlane(planeAnchor: planeAnchor, node: node)
         setupMotherBall(planeAnchor: planeAnchor, node: node)
-        //setupTargetBall(planeAnchor: planeAnchor, node: node)
+        setupTargetBall(planeAnchor: planeAnchor, node: node)
         
         let configuration = ARWorldTrackingConfiguration()
         sceneView.session.run(configuration)
@@ -130,9 +125,9 @@ extension MainViewController {
                                                 planeAnchor.center.z - planeAnchor.extent.z / 2)
         wallNegativeZNode.geometry = wallNegtiveZ
         wallNegativeZNode.physicsBody = SCNPhysicsBody(type: .kinematic, shape: SCNPhysicsShape(geometry: wallNegtiveZ, options: nil))
-        wallNegativeZNode.physicsBody?.categoryBitMask = 2
-        wallNegativeZNode.physicsBody?.contactTestBitMask = 1
-        wallNegativeZNode.name = "-Z wall"
+        wallNegativeZNode.physicsBody?.categoryBitMask = ObjectCategory.wall.categoryBit
+        wallNegativeZNode.physicsBody?.contactTestBitMask = ObjectCategory.motherBall.categoryBit | ObjectCategory.targetBall.categoryBit
+        wallNegativeZNode.name = ObjectCategory.wall.nodeName
         
         node.addChildNode(wallNegativeZNode)
         
@@ -147,9 +142,9 @@ extension MainViewController {
                                                 planeAnchor.center.z + planeAnchor.extent.z / 2)
         wallPositiveZNode.geometry = wallPositiveZ
         wallPositiveZNode.physicsBody = SCNPhysicsBody(type: .kinematic, shape: SCNPhysicsShape(geometry: wallPositiveZ, options: nil))
-        wallPositiveZNode.physicsBody?.categoryBitMask = 2
-        wallPositiveZNode.physicsBody?.contactTestBitMask = 1
-        wallPositiveZNode.name = "+Z wall"
+        wallPositiveZNode.physicsBody?.categoryBitMask = ObjectCategory.wall.categoryBit
+        wallPositiveZNode.physicsBody?.contactTestBitMask = ObjectCategory.motherBall.categoryBit | ObjectCategory.targetBall.categoryBit
+        wallPositiveZNode.name = ObjectCategory.wall.nodeName
         
         node.addChildNode(wallPositiveZNode)
         
@@ -166,9 +161,9 @@ extension MainViewController {
         
         wallNegativeXNode.geometry = wallNegtiveX
         wallNegativeXNode.physicsBody = SCNPhysicsBody(type: .kinematic, shape: SCNPhysicsShape(geometry: wallNegtiveX, options: nil))
-        wallNegativeXNode.physicsBody?.categoryBitMask = 2
-        wallNegativeXNode.physicsBody?.contactTestBitMask = 1
-        wallNegativeXNode.name = "-X wall"
+        wallNegativeXNode.physicsBody?.categoryBitMask = ObjectCategory.wall.categoryBit
+        wallNegativeXNode.physicsBody?.contactTestBitMask = ObjectCategory.motherBall.categoryBit | ObjectCategory.targetBall.categoryBit
+        wallNegativeXNode.name = ObjectCategory.wall.nodeName
         
         node.addChildNode(wallNegativeXNode)
         
@@ -184,9 +179,9 @@ extension MainViewController {
                                                 planeAnchor.center.z)
         wallPositiveXNode.geometry = wallPositiveX
         wallPositiveXNode.physicsBody = SCNPhysicsBody(type: .kinematic, shape: SCNPhysicsShape(geometry: wallPositiveX, options: nil))
-        wallPositiveXNode.physicsBody?.categoryBitMask = 2
-        wallPositiveXNode.physicsBody?.contactTestBitMask = 1
-        wallPositiveXNode.name = "+X wall"
+        wallPositiveXNode.physicsBody?.categoryBitMask = ObjectCategory.wall.categoryBit
+        wallPositiveXNode.physicsBody?.contactTestBitMask = ObjectCategory.motherBall.categoryBit | ObjectCategory.targetBall.categoryBit
+        wallPositiveXNode.name = ObjectCategory.wall.nodeName
         
         node.addChildNode(wallPositiveXNode)
     }
@@ -201,9 +196,9 @@ extension MainViewController {
         motherBallNode.position = SCNVector3(planeAnchor.center.x, ballRadius, planeAnchor.center.z)
         motherBallNode.geometry = motherBall
         motherBallNode.physicsBody = SCNPhysicsBody(type: .kinematic, shape: SCNPhysicsShape(geometry: motherBall, options: nil))
-        motherBallNode.physicsBody?.categoryBitMask = 1
-        motherBallNode.physicsBody?.contactTestBitMask = 2
-        motherBallNode.name = "mother"
+        motherBallNode.physicsBody?.categoryBitMask = ObjectCategory.motherBall.categoryBit
+        motherBallNode.physicsBody?.contactTestBitMask = ObjectCategory.wall.categoryBit | ObjectCategory.targetBall.categoryBit
+        motherBallNode.name = ObjectCategory.motherBall.nodeName
         
         node.addChildNode(motherBallNode)
     }
@@ -215,12 +210,12 @@ extension MainViewController {
         targetBall.materials = [targetBallMaterial]
         
         targetBallNode = BallNode()
-        targetBallNode.position = SCNVector3(planeAnchor.center.x + 0.2, ballRadius, planeAnchor.center.z)
+        targetBallNode.position = SCNVector3(planeAnchor.center.x + 0.1, ballRadius, planeAnchor.center.z)
         targetBallNode.geometry = targetBall
         targetBallNode.physicsBody = SCNPhysicsBody(type: .kinematic, shape: SCNPhysicsShape(geometry: targetBall, options: nil))
-        targetBallNode.physicsBody?.categoryBitMask = 1
-        targetBallNode.physicsBody?.contactTestBitMask = 1
-        targetBallNode.name = "target"
+        targetBallNode.physicsBody?.categoryBitMask = ObjectCategory.targetBall.categoryBit
+        targetBallNode.physicsBody?.contactTestBitMask = ObjectCategory.wall.categoryBit | ObjectCategory.motherBall.categoryBit
+        targetBallNode.name = ObjectCategory.targetBall.nodeName
         
         node.addChildNode(targetBallNode)
     }
@@ -228,22 +223,31 @@ extension MainViewController {
 
 extension MainViewController: SCNPhysicsContactDelegate {
     func physicsWorld(_ world: SCNPhysicsWorld, didBegin contact: SCNPhysicsContact) {
-        var motherBallNode: BallNode!
-        var targetBallNode: BallNode?
-        var wallNode: SCNNode!
-        if contact.nodeA.name == "mother" {
-            motherBallNode = (contact.nodeA as! BallNode)
-            wallNode = contact.nodeB
-            //targetBallNode = contact.nodeB
+        //Ball hits the wall
+        if contact.nodeA.name == ObjectCategory.wall.nodeName || contact.nodeA.name == ObjectCategory.wall.nodeName {
+            ballHitsWall(contact: contact)
+            return
         }
         
-        if contact.nodeB.name == "mother" {
+        //mother ball hits target ball
+        if contact.nodeA.name == ObjectCategory.motherBall.nodeName || contact.nodeA.name == ObjectCategory.motherBall.nodeName {
+            motherBallHitsTargetBall(contact: contact)
+            return
+        }
+    }
+    
+    private func ballHitsWall(contact: SCNPhysicsContact) {
+        var motherBallNode: BallNode!
+        
+        if contact.nodeA.name == ObjectCategory.motherBall.nodeName {
+            motherBallNode = (contact.nodeA as! BallNode)
+        }
+        
+        if contact.nodeB.name == ObjectCategory.motherBall.nodeName {
             motherBallNode = (contact.nodeB as! BallNode)
-            wallNode = contact.nodeA
-            //targetBallNode = contact.nodeA
         }
 
-        motherBallNode.removeAction(forKey: "Move")
+        motherBallNode.removeAction(forKey: ObjectCategory.motherBall.nodeName)
         guard motherBallNode.ballSpeed > 0.01 else { return }
         motherBallNode.ballSpeed = motherBallNode.ballSpeed / 2
         
@@ -258,18 +262,10 @@ extension MainViewController: SCNPhysicsContactDelegate {
         motherBallNode.runAction(SCNAction.moveBy(x: CGFloat(reflectedBallDirection.x * motherBallNode.ballSpeed * 3),
                                                   y: 0,
                                                   z: CGFloat(reflectedBallDirection.x * motherBallNode.ballSpeed * 3),
-                                                  duration: 3), forKey: "Move")
+                                                  duration: 3), forKey: ObjectCategory.motherBall.nodeName)
+    }
+    
+    private func motherBallHitsTargetBall(contact: SCNPhysicsContact) {
         
-        
-//        let dist: Float = 0.05
-//        motherBallNode.runAction(SCNAction.moveBy(x: CGFloat(normal.x * dist),
-//                                                  y: 0,
-//                                                  z: CGFloat(normal.z * dist),
-//                                                  duration: 2))
-//
-//        targetBallNode.runAction(SCNAction.moveBy(x: CGFloat(-normal.x * dist),
-//                                                  y: 0,
-//                                                  z: CGFloat(-normal.z * dist),
-//                                                  duration: 2))
     }
 }

@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		FE43739F249FE2320031033E /* BallNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE43739E249FE2320031033E /* BallNode.swift */; };
 		FE4373A1249FE3E30031033E /* Math.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4373A0249FE3E30031033E /* Math.swift */; };
+		FE4373A324A037750031033E /* ObjectCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4373A224A037750031033E /* ObjectCategory.swift */; };
 		FE5177D2249AF8EA003B362F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5177D1249AF8EA003B362F /* AppDelegate.swift */; };
 		FE5177D4249AF8EA003B362F /* art.scnassets in Resources */ = {isa = PBXBuildFile; fileRef = FE5177D3249AF8EA003B362F /* art.scnassets */; };
 		FE5177D6249AF8EA003B362F /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5177D5249AF8EA003B362F /* MainViewController.swift */; };
@@ -20,6 +21,7 @@
 /* Begin PBXFileReference section */
 		FE43739E249FE2320031033E /* BallNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BallNode.swift; sourceTree = "<group>"; };
 		FE4373A0249FE3E30031033E /* Math.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Math.swift; sourceTree = "<group>"; };
+		FE4373A224A037750031033E /* ObjectCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectCategory.swift; sourceTree = "<group>"; };
 		FE5177CE249AF8EA003B362F /* SlamDunk.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SlamDunk.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE5177D1249AF8EA003B362F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		FE5177D3249AF8EA003B362F /* art.scnassets */ = {isa = PBXFileReference; lastKnownFileType = wrapper.scnassets; path = art.scnassets; sourceTree = "<group>"; };
@@ -47,6 +49,7 @@
 				FE5177D7249AF8EA003B362F /* Main.storyboard */,
 				FE5177D5249AF8EA003B362F /* MainViewController.swift */,
 				FE43739E249FE2320031033E /* BallNode.swift */,
+				FE4373A224A037750031033E /* ObjectCategory.swift */,
 			);
 			path = Main;
 			sourceTree = "<group>";
@@ -165,6 +168,7 @@
 				FE5177D6249AF8EA003B362F /* MainViewController.swift in Sources */,
 				FE4373A1249FE3E30031033E /* Math.swift in Sources */,
 				FE5177D2249AF8EA003B362F /* AppDelegate.swift in Sources */,
+				FE4373A324A037750031033E /* ObjectCategory.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
