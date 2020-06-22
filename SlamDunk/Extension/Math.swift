@@ -28,7 +28,7 @@ extension SCNVector3 {
     }
     
     func dot(vector: SCNVector3) -> Float {
-        return self.x * vector.x + self.y * vector.y + self.z * vector.z
+        return x * vector.x + y * vector.y + z * vector.z
     }
     
     func normalComponent(wrt vector: SCNVector3) -> SCNVector3 {
@@ -42,6 +42,6 @@ extension SCNVector3 {
         let vector = vector.normalized
         let normal = normalComponent(wrt: vector)
         
-        return SCNVector3(x: vector.x - normal.x, y: vector.y - normal.y, z: vector.z - normal.z)
+        return SCNVector3(x: x - normal.x, y: y - normal.y, z: z - normal.z)
     }
 }

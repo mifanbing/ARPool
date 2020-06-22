@@ -3,8 +3,8 @@ import SceneKit
 import ARKit
 
 class MainViewController: UIViewController {
-    
     @IBOutlet var sceneView: ARSCNView!
+    
     var start: CGPoint?
     var end: CGPoint?
     var motherBallNode: BallNode!
@@ -247,8 +247,10 @@ extension MainViewController: SCNPhysicsContactDelegate {
         }
         
         ballNode.removeAction(forKey: ballNode.name!)
-        guard ballNode.ballSpeed > 0.01 else { return }
-        ballNode.ballSpeed = ballNode.ballSpeed / 2
+        guard ballNode.ballSpeed > 0.01 else {
+            ballNode.moved(ballSpeed: 0, ballDirection: SCNVector3(1, 0, 0))
+            return
+        }
         
         let normal = contact.contactNormal.xzPlane
         
@@ -256,8 +258,8 @@ extension MainViewController: SCNPhysicsContactDelegate {
         let tangentCompoent = ballNode.ballDirection.tangentComponent(wrt: normal)
         let reflectedBallDirection = SCNVector3(tangentCompoent.x - normalComponent.x,
                                                 0,
-                                                tangentCompoent.z - normalComponent.z)
-        
+                                                tangentCompoent.z - normalComponent.z).normalized
+        ballNode.moved(ballSpeed: ballNode.ballSpeed/2, ballDirection: reflectedBallDirection)
         ballNode.runAction(SCNAction.moveBy(x: CGFloat(reflectedBallDirection.x * ballNode.ballSpeed * 3),
                                             y: 0,
                                             z: CGFloat(reflectedBallDirection.z * ballNode.ballSpeed * 3),
@@ -289,31 +291,43 @@ extension MainViewController: SCNPhysicsContactDelegate {
         let normalComponentB = ballNodeB.ballDirection.normalComponent(wrt: normal)
         let tangentCompoentB = ballNodeB.ballDirection.tangentComponent(wrt: normal)
         
-        let normalComponentAfter = SCNVector3((normalComponentA.x * ballNodeA.ballSpeed + normalComponentB.x * ballNodeB.ballSpeed) / 2,
-                                              0,
-                                              (normalComponentA.z * ballNodeA.ballSpeed + normalComponentB.z * ballNodeB.ballSpeed) / 2)
+        //print("A \(ballNodeA.name!) \(ballNodeA.ballSpeed) ")
+        //print("B \(ballNodeB.name!) \(ballNodeB.ballSpeed) ")
         
-        let reflectedBallAVelocity = SCNVector3(tangentCompoentA.x * ballNodeA.ballSpeed + normalComponentAfter.x,
+        let normalComponentAAfter = SCNVector3((normalComponentA.x * ballNodeA.ballSpeed + normalComponentB.x * ballNodeB.ballSpeed) * 0.3,
+                                              0,
+                                              (normalComponentA.z * ballNodeA.ballSpeed + normalComponentB.z * ballNodeB.ballSpeed) * 0.3)
+        
+        let reflectedBallAVelocity = SCNVector3(tangentCompoentA.x * ballNodeA.ballSpeed + normalComponentAAfter.x,
                                                 0,
-                                                tangentCompoentA.z * ballNodeA.ballSpeed + normalComponentAfter.z)
+                                                tangentCompoentA.z * ballNodeA.ballSpeed + normalComponentAAfter.z)
         if reflectedBallAVelocity.length > 0.01 {
-            ballNodeA.ballSpeed = reflectedBallAVelocity.length
+            ballNodeA.moved(ballSpeed: reflectedBallAVelocity.length, ballDirection: reflectedBallAVelocity.normalized)
             ballNodeA.runAction(SCNAction.moveBy(x: CGFloat(reflectedBallAVelocity.x * 3),
                                                  y: 0,
                                                  z: CGFloat(reflectedBallAVelocity.z * 3),
                                                  duration: 3), forKey: ballNodeA.name!)
+        } else {
+            ballNodeA.moved(ballSpeed: 0, ballDirection: SCNVector3(1, 0, 0))
         }
-              
-        let reflectedBallBVelocity = SCNVector3(tangentCompoentB.x * ballNodeB.ballSpeed + normalComponentAfter.x,
+        
+        let normalComponentBAfter = SCNVector3((normalComponentA.x * ballNodeA.ballSpeed + normalComponentB.x * ballNodeB.ballSpeed) * 0.5,
                                                 0,
-                                                tangentCompoentB.z * ballNodeB.ballSpeed + normalComponentAfter.z)
+                                                (normalComponentA.z * ballNodeA.ballSpeed + normalComponentB.z * ballNodeB.ballSpeed) * 0.5)
+          
+        let reflectedBallBVelocity = SCNVector3(tangentCompoentB.x * ballNodeB.ballSpeed + normalComponentBAfter.x,
+                                                0,
+                                                tangentCompoentB.z * ballNodeB.ballSpeed + normalComponentBAfter.z)
         if reflectedBallBVelocity.length > 0.01 {
-            ballNodeB.ballSpeed = reflectedBallBVelocity.length
+            ballNodeA.moved(ballSpeed: reflectedBallBVelocity.length, ballDirection: reflectedBallBVelocity.normalized)
             ballNodeB.runAction(SCNAction.moveBy(x: CGFloat(reflectedBallBVelocity.x * 3),
                                                  y: 0,
                                                  z: CGFloat(reflectedBallBVelocity.z * 3),
                                                  duration: 3), forKey: ballNodeB.name!)
+        } else {
+            ballNodeB.moved(ballSpeed: 0, ballDirection: SCNVector3(1, 0, 0))
         }
+        
     }
 
 }
