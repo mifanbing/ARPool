@@ -1,1 +1,1 @@
-AR pool using iOS ARKit.
+AR pool ball using iOS ARKit.
