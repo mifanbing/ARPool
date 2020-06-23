@@ -52,3 +52,21 @@ extension SCNVector3 {
         return SCNVector3(x: x - normal.x, y: y - normal.y, z: z - normal.z)
     }
 }
+
+extension Int {
+    static func rowAndNumber(index: Int) -> (Int, Int) {
+        let row = Int(ceil( (sqrt(Double(8 * index + 1)) - 1) / 2 ))
+        
+        let number: Int = (index - row * (row - 1) / 2)
+        
+        return (row, number)
+    }
+    
+    static func offsetFromFirst(index: Int, space: Float) -> (Float, Float) {
+        let (row, number) = rowAndNumber(index: index)
+        let xOffset: Float = (Float(row) - 1) * sqrt(3) / 2 * space
+        let zOffset: Float = (Float(row) - 1) / 2 * space - Float(number - 1) * space
+        
+        return (xOffset, zOffset)
+    }
+}

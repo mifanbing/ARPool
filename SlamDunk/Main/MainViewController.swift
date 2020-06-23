@@ -213,14 +213,15 @@ extension MainViewController {
     }
     
     private func setupTargetBall(planeAnchor: ARPlaneAnchor, node: SCNNode) {
-        for i in 1...2 {
+        for i in 1...6 {
             let targetBall = SCNSphere(radius: CGFloat(ballRadius))
             let targetBallMaterial = SCNMaterial()
             targetBallMaterial.diffuse.contents = UIColor.red
             targetBall.materials = [targetBallMaterial]
             
+            let (xOffet, zOffset) = Int.offsetFromFirst(index: i, space: ballRadius * 2.5)
             let targetBallNode = BallNode()
-            targetBallNode.position = SCNVector3(planeAnchor.center.x + 0.05 * Float(i), ballRadius, planeAnchor.center.z)
+            targetBallNode.position = SCNVector3(planeAnchor.center.x + xOffet, ballRadius, planeAnchor.center.z + zOffset)
             targetBallNode.geometry = targetBall
             targetBallNode.physicsBody = SCNPhysicsBody(type: .kinematic, shape: SCNPhysicsShape(geometry: targetBall, options: nil))
             targetBallNode.physicsBody?.categoryBitMask = ObjectCategory.targetBall.categoryBit
