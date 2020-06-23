@@ -213,20 +213,22 @@ extension MainViewController {
     }
     
     private func setupTargetBall(planeAnchor: ARPlaneAnchor, node: SCNNode) {
-        let targetBall = SCNSphere(radius: CGFloat(ballRadius))
-        let targetBallMaterial = SCNMaterial()
-        targetBallMaterial.diffuse.contents = UIColor.red
-        targetBall.materials = [targetBallMaterial]
-        
-        let targetBallNode = BallNode()
-        targetBallNode.position = SCNVector3(planeAnchor.center.x + 0.1, ballRadius, planeAnchor.center.z)
-        targetBallNode.geometry = targetBall
-        targetBallNode.physicsBody = SCNPhysicsBody(type: .kinematic, shape: SCNPhysicsShape(geometry: targetBall, options: nil))
-        targetBallNode.physicsBody?.categoryBitMask = ObjectCategory.targetBall.categoryBit
-        targetBallNode.physicsBody?.contactTestBitMask = ObjectCategory.wall.categoryBit | ObjectCategory.motherBall.categoryBit
-        targetBallNode.name = ObjectCategory.targetBall.nodeName
-        
-        node.addChildNode(targetBallNode)
+        for i in 1...2 {
+            let targetBall = SCNSphere(radius: CGFloat(ballRadius))
+            let targetBallMaterial = SCNMaterial()
+            targetBallMaterial.diffuse.contents = UIColor.red
+            targetBall.materials = [targetBallMaterial]
+            
+            let targetBallNode = BallNode()
+            targetBallNode.position = SCNVector3(planeAnchor.center.x + 0.05 * Float(i), ballRadius, planeAnchor.center.z)
+            targetBallNode.geometry = targetBall
+            targetBallNode.physicsBody = SCNPhysicsBody(type: .kinematic, shape: SCNPhysicsShape(geometry: targetBall, options: nil))
+            targetBallNode.physicsBody?.categoryBitMask = ObjectCategory.targetBall.categoryBit
+            targetBallNode.physicsBody?.contactTestBitMask = ObjectCategory.wall.categoryBit | ObjectCategory.motherBall.categoryBit |  ObjectCategory.targetBall.categoryBit
+            targetBallNode.name = ObjectCategory.targetBall.nodeName + "\(i)"
+            
+            node.addChildNode(targetBallNode)
+        }
     }
 }
 
@@ -243,22 +245,22 @@ extension MainViewController: SCNPhysicsContactDelegate {
             ballHitsBall(contact: contact)
             return
         }
+        
+        ballHitsBall(contact: contact)
     }
     
     private func ballHitsWall(contact: SCNPhysicsContact) {
         var ballNode: BallNode!
         
-        if contact.nodeA.name == ObjectCategory.motherBall.nodeName || contact.nodeA.name == ObjectCategory.targetBall.nodeName {
+        if contact.nodeA.name == ObjectCategory.motherBall.nodeName || contact.nodeA.name!.contains(ObjectCategory.targetBall.nodeName) {
             ballNode = (contact.nodeA as! BallNode)
         }
         
-        if contact.nodeB.name == ObjectCategory.motherBall.nodeName || contact.nodeB.name == ObjectCategory.targetBall.nodeName {
+        if contact.nodeB.name == ObjectCategory.motherBall.nodeName || contact.nodeB.name!.contains(ObjectCategory.targetBall.nodeName) {
             ballNode = (contact.nodeB as! BallNode)
         }
         
-        print(ballNode.actionKeys)
         ballNode.removeAction(forKey: ballNode.name!)
-        print(ballNode.actionKeys)
         
         guard ballNode.ballSpeed > 0.01 else {
             ballNode.moved(ballSpeed: 0, ballDirection: SCNVector3(1, 0, 0))
@@ -314,6 +316,9 @@ extension MainViewController: SCNPhysicsContactDelegate {
         let coefficientA: Float = aHitsB ? 0.0 : 0.5
         let coefficientB: Float = aHitsB ? 0.5 : 0.0
         
+        print(aHitsB)
+        print("A: \(ballNodeA.ballSpeed) B: \(ballNodeB.ballSpeed) ")
+        
         let normalComponentAAfter = SCNVector3((normalComponentA.x * ballNodeA.ballSpeed + normalComponentB.x * ballNodeB.ballSpeed) * coefficientA,
                                               0,
                                               (normalComponentA.z * ballNodeA.ballSpeed + normalComponentB.z * ballNodeB.ballSpeed) * coefficientA)
@@ -321,6 +326,19 @@ extension MainViewController: SCNPhysicsContactDelegate {
         let reflectedBallAVelocity = SCNVector3(tangentCompoentA.x * ballNodeA.ballSpeed + normalComponentAAfter.x,
                                                 0,
                                                 tangentCompoentA.z * ballNodeA.ballSpeed + normalComponentAAfter.z)
+        print(normalComponentAAfter)
+        print(reflectedBallAVelocity)
+        
+        let normalComponentBAfter = SCNVector3((normalComponentA.x * ballNodeA.ballSpeed + normalComponentB.x * ballNodeB.ballSpeed) * coefficientB,
+                                                0,
+                                               (normalComponentA.z * ballNodeA.ballSpeed + normalComponentB.z * ballNodeB.ballSpeed) * coefficientB)
+          
+        let reflectedBallBVelocity = SCNVector3(tangentCompoentB.x * ballNodeB.ballSpeed + normalComponentBAfter.x,
+                                                0,
+                                                tangentCompoentB.z * ballNodeB.ballSpeed + normalComponentBAfter.z)
+        print(normalComponentBAfter)
+        print(reflectedBallBVelocity)
+        
         if reflectedBallAVelocity.length > 0.01 {
             ballNodeA.moved(ballSpeed: reflectedBallAVelocity.length, ballDirection: reflectedBallAVelocity.normalized)
             //To Avoid continuous collision
@@ -337,13 +355,6 @@ extension MainViewController: SCNPhysicsContactDelegate {
             ballNodeA.moved(ballSpeed: 0, ballDirection: SCNVector3(1, 0, 0))
         }
         
-        let normalComponentBAfter = SCNVector3((normalComponentA.x * ballNodeA.ballSpeed + normalComponentB.x * ballNodeB.ballSpeed) * coefficientB,
-                                                0,
-                                               (normalComponentA.z * ballNodeA.ballSpeed + normalComponentB.z * ballNodeB.ballSpeed) * coefficientB)
-          
-        let reflectedBallBVelocity = SCNVector3(tangentCompoentB.x * ballNodeB.ballSpeed + normalComponentBAfter.x,
-                                                0,
-                                                tangentCompoentB.z * ballNodeB.ballSpeed + normalComponentBAfter.z)
         if reflectedBallBVelocity.length > 0.01 {
             ballNodeB.moved(ballSpeed: reflectedBallBVelocity.length, ballDirection: reflectedBallBVelocity.normalized)
             //To Avoid continuous collision
