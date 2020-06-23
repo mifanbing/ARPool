@@ -27,6 +27,13 @@ extension SCNVector3 {
         return SCNVector3(x, 0, z).normalized
     }
     
+    func rotationByY(degree: Float) -> SCNVector3 {
+        let xRotate = x * cos(degree) - z * sin(degree)
+        let zRotate = x * sin(degree) + z * cos(degree)
+        
+        return SCNVector3(xRotate, y, zRotate)
+    }
+    
     func dot(vector: SCNVector3) -> Float {
         return x * vector.x + y * vector.y + z * vector.z
     }

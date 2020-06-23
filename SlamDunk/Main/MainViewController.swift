@@ -11,6 +11,7 @@ class MainViewController: UIViewController {
     let ballRadius: Float = 0.02
     let tableWidth: CGFloat = 0.5
     let tableLength: CGFloat = 0.3
+    var worldRotation: Float = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -62,8 +63,12 @@ class MainViewController: UIViewController {
             let startToEnd = SCNVector3(end3DTranslation.x - start3DTranslation.x,
                                         0,
                                         end3DTranslation.z - start3DTranslation.z)
-            let ballDirection = startToEnd.normalized
+            
+            let column0 = start3D.worldTransform.columns.0
+            worldRotation = atan(column0[2] / column0[0])
+            let ballDirection = startToEnd.normalized.rotationByY(degree: -worldRotation)
             let speed = startToEnd.length
+
             motherBallNode.runAction(SCNAction.moveBy(x: CGFloat(ballDirection.x * speed * 3),
                                                       y: 0,
                                                       z: CGFloat(ballDirection.z * speed * 3),
@@ -127,6 +132,7 @@ extension MainViewController {
         wallNegativeZNode.physicsBody = SCNPhysicsBody(type: .kinematic, shape: SCNPhysicsShape(geometry: wallNegtiveZ, options: nil))
         wallNegativeZNode.physicsBody?.categoryBitMask = ObjectCategory.wall.categoryBit
         wallNegativeZNode.physicsBody?.contactTestBitMask = ObjectCategory.motherBall.categoryBit | ObjectCategory.targetBall.categoryBit
+        wallNegativeZNode.physicsBody?.collisionBitMask = ObjectCategory.motherBall.categoryBit | ObjectCategory.targetBall.categoryBit
         wallNegativeZNode.name = ObjectCategory.wall.nodeName
         
         node.addChildNode(wallNegativeZNode)
@@ -144,6 +150,7 @@ extension MainViewController {
         wallPositiveZNode.physicsBody = SCNPhysicsBody(type: .kinematic, shape: SCNPhysicsShape(geometry: wallPositiveZ, options: nil))
         wallPositiveZNode.physicsBody?.categoryBitMask = ObjectCategory.wall.categoryBit
         wallPositiveZNode.physicsBody?.contactTestBitMask = ObjectCategory.motherBall.categoryBit | ObjectCategory.targetBall.categoryBit
+        wallPositiveZNode.physicsBody?.collisionBitMask = ObjectCategory.motherBall.categoryBit | ObjectCategory.targetBall.categoryBit
         wallPositiveZNode.name = ObjectCategory.wall.nodeName
         
         node.addChildNode(wallPositiveZNode)
@@ -163,6 +170,7 @@ extension MainViewController {
         wallNegativeXNode.physicsBody = SCNPhysicsBody(type: .kinematic, shape: SCNPhysicsShape(geometry: wallNegtiveX, options: nil))
         wallNegativeXNode.physicsBody?.categoryBitMask = ObjectCategory.wall.categoryBit
         wallNegativeXNode.physicsBody?.contactTestBitMask = ObjectCategory.motherBall.categoryBit | ObjectCategory.targetBall.categoryBit
+        wallNegativeXNode.physicsBody?.collisionBitMask = ObjectCategory.motherBall.categoryBit | ObjectCategory.targetBall.categoryBit
         wallNegativeXNode.name = ObjectCategory.wall.nodeName
         
         node.addChildNode(wallNegativeXNode)
@@ -181,6 +189,7 @@ extension MainViewController {
         wallPositiveXNode.physicsBody = SCNPhysicsBody(type: .kinematic, shape: SCNPhysicsShape(geometry: wallPositiveX, options: nil))
         wallPositiveXNode.physicsBody?.categoryBitMask = ObjectCategory.wall.categoryBit
         wallPositiveXNode.physicsBody?.contactTestBitMask = ObjectCategory.motherBall.categoryBit | ObjectCategory.targetBall.categoryBit
+        wallPositiveXNode.physicsBody?.collisionBitMask = ObjectCategory.motherBall.categoryBit | ObjectCategory.targetBall.categoryBit
         wallPositiveXNode.name = ObjectCategory.wall.nodeName
         
         node.addChildNode(wallPositiveXNode)
@@ -224,13 +233,13 @@ extension MainViewController {
 extension MainViewController: SCNPhysicsContactDelegate {
     func physicsWorld(_ world: SCNPhysicsWorld, didBegin contact: SCNPhysicsContact) {
         //Ball hits the wall
-        if contact.nodeA.name == ObjectCategory.wall.nodeName || contact.nodeA.name == ObjectCategory.wall.nodeName {
+        if contact.nodeA.name == ObjectCategory.wall.nodeName || contact.nodeB.name == ObjectCategory.wall.nodeName {
             ballHitsWall(contact: contact)
             return
         }
         
         //ball hits ball
-        if contact.nodeA.name == ObjectCategory.motherBall.nodeName || contact.nodeA.name == ObjectCategory.motherBall.nodeName {
+        if contact.nodeA.name == ObjectCategory.motherBall.nodeName || contact.nodeB.name == ObjectCategory.motherBall.nodeName {
             ballHitsBall(contact: contact)
             return
         }
@@ -247,13 +256,16 @@ extension MainViewController: SCNPhysicsContactDelegate {
             ballNode = (contact.nodeB as! BallNode)
         }
         
+        print(ballNode.actionKeys)
         ballNode.removeAction(forKey: ballNode.name!)
+        print(ballNode.actionKeys)
+        
         guard ballNode.ballSpeed > 0.01 else {
             ballNode.moved(ballSpeed: 0, ballDirection: SCNVector3(1, 0, 0))
             return
         }
         
-        let normal = contact.contactNormal.xzPlane
+        let normal = contact.contactNormal.xzPlane.rotationByY(degree: -worldRotation)
         
         let normalComponent = ballNode.ballDirection.normalComponent(wrt: normal)
         let tangentCompoent = ballNode.ballDirection.tangentComponent(wrt: normal)
@@ -261,6 +273,12 @@ extension MainViewController: SCNPhysicsContactDelegate {
                                                 0,
                                                 tangentCompoent.z - normalComponent.z).normalized
         ballNode.moved(ballSpeed: ballNode.ballSpeed/2, ballDirection: reflectedBallDirection)
+        //To Avoid continuous collision
+        ballNode.runAction(SCNAction.moveBy(x: CGFloat(reflectedBallDirection.x * ballRadius),
+                                            y: 0,
+                                            z: CGFloat(reflectedBallDirection.z * ballRadius),
+                                            duration: 0.01), forKey: ballNode.name!)
+        
         ballNode.runAction(SCNAction.moveBy(x: CGFloat(reflectedBallDirection.x * ballNode.ballSpeed * 3),
                                             y: 0,
                                             z: CGFloat(reflectedBallDirection.z * ballNode.ballSpeed * 3),
@@ -278,7 +296,7 @@ extension MainViewController: SCNPhysicsContactDelegate {
             ballNodeB.removeAction(forKey: ballNodeB.name!)
         }
         
-        let normal = contact.contactNormal.xzPlane
+        let normal = contact.contactNormal.xzPlane.rotationByY(degree: -worldRotation)
 
         if ballNodeA.ballSpeed == 0 {
             ballNodeA.ballDirection = normal.dot(vector: ballNodeB.ballDirection) > 0 ? normal : normal.negative
@@ -292,9 +310,9 @@ extension MainViewController: SCNPhysicsContactDelegate {
         let normalComponentB = ballNodeB.ballDirection.normalComponent(wrt: normal)
         let tangentCompoentB = ballNodeB.ballDirection.tangentComponent(wrt: normal)
         
-        let aHitsB = ballNodeA.ballSpeed * normalComponentA.length.power(exponential: 2) > ballNodeB.ballSpeed * normalComponentB.length.power(exponential: 2)
-        let coefficientA: Float = aHitsB ? 0.2 : 0.5
-        let coefficientB: Float = aHitsB ? 0.5 : 0.2
+        let aHitsB = (ballNodeA.ballSpeed * normalComponentA.length).power(exponential: 2) > (ballNodeB.ballSpeed * normalComponentB.length).power(exponential: 2)
+        let coefficientA: Float = aHitsB ? 0.0 : 0.5
+        let coefficientB: Float = aHitsB ? 0.5 : 0.0
         
         let normalComponentAAfter = SCNVector3((normalComponentA.x * ballNodeA.ballSpeed + normalComponentB.x * ballNodeB.ballSpeed) * coefficientA,
                                               0,
@@ -305,6 +323,12 @@ extension MainViewController: SCNPhysicsContactDelegate {
                                                 tangentCompoentA.z * ballNodeA.ballSpeed + normalComponentAAfter.z)
         if reflectedBallAVelocity.length > 0.01 {
             ballNodeA.moved(ballSpeed: reflectedBallAVelocity.length, ballDirection: reflectedBallAVelocity.normalized)
+            //To Avoid continuous collision
+            ballNodeA.runAction(SCNAction.moveBy(x: CGFloat(ballNodeA.ballDirection.x * ballRadius),
+                                                 y: 0,
+                                                 z: CGFloat(ballNodeA.ballDirection.z * ballRadius),
+                                                 duration: 0.01), forKey: ballNodeA.name!)
+            
             ballNodeA.runAction(SCNAction.moveBy(x: CGFloat(reflectedBallAVelocity.x * 3),
                                                  y: 0,
                                                  z: CGFloat(reflectedBallAVelocity.z * 3),
@@ -315,13 +339,19 @@ extension MainViewController: SCNPhysicsContactDelegate {
         
         let normalComponentBAfter = SCNVector3((normalComponentA.x * ballNodeA.ballSpeed + normalComponentB.x * ballNodeB.ballSpeed) * coefficientB,
                                                 0,
-                                                (normalComponentA.z * ballNodeA.ballSpeed + normalComponentB.z * ballNodeB.ballSpeed) * coefficientB)
+                                               (normalComponentA.z * ballNodeA.ballSpeed + normalComponentB.z * ballNodeB.ballSpeed) * coefficientB)
           
         let reflectedBallBVelocity = SCNVector3(tangentCompoentB.x * ballNodeB.ballSpeed + normalComponentBAfter.x,
                                                 0,
                                                 tangentCompoentB.z * ballNodeB.ballSpeed + normalComponentBAfter.z)
         if reflectedBallBVelocity.length > 0.01 {
-            ballNodeA.moved(ballSpeed: reflectedBallBVelocity.length, ballDirection: reflectedBallBVelocity.normalized)
+            ballNodeB.moved(ballSpeed: reflectedBallBVelocity.length, ballDirection: reflectedBallBVelocity.normalized)
+            //To Avoid continuous collision
+            ballNodeB.runAction(SCNAction.moveBy(x: CGFloat(ballNodeB.ballDirection.x * ballRadius),
+                                                 y: 0,
+                                                 z: CGFloat(ballNodeB.ballDirection.z * ballRadius),
+                                                 duration: 0.01), forKey: ballNodeB.name!)
+            
             ballNodeB.runAction(SCNAction.moveBy(x: CGFloat(reflectedBallBVelocity.x * 3),
                                                  y: 0,
                                                  z: CGFloat(reflectedBallBVelocity.z * 3),
