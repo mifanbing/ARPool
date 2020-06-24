@@ -2,6 +2,13 @@ import UIKit
 import SceneKit
 import ARKit
 
+enum WallType {
+    case negativeZ
+    case positiveZ
+    case negativeX
+    case positiveX
+}
+
 class MainViewController: UIViewController {
     @IBOutlet var sceneView: ARSCNView!
     
@@ -124,7 +131,8 @@ extension MainViewController {
         wallNegativeZMaterial.diffuse.contents = UIColor.blue
         wallNegtiveZ.materials = [wallNegativeZMaterial]
         
-        let wallNegativeZNode = SCNNode()
+        let wallNegativeZNode = WallNode()
+        wallNegativeZNode.setWidth(width: tableWidth, wallType: .negativeZ)
         wallNegativeZNode.position = SCNVector3(planeAnchor.center.x,
                                                 ballRadius,
                                                 planeAnchor.center.z - Float(tableLength) / 2)
@@ -142,7 +150,8 @@ extension MainViewController {
         wallPositiveZMaterial.diffuse.contents = UIColor.blue
         wallPositiveZ.materials = [wallNegativeZMaterial]
         
-        let wallPositiveZNode = SCNNode()
+        let wallPositiveZNode = WallNode()
+        wallPositiveZNode.setWidth(width: tableWidth, wallType: .positiveZ)
         wallPositiveZNode.position = SCNVector3(planeAnchor.center.x,
                                                 ballRadius,
                                                 planeAnchor.center.z + Float(tableLength) / 2)
@@ -160,7 +169,8 @@ extension MainViewController {
         wallNegativeXMaterial.diffuse.contents = UIColor.blue
         wallNegtiveX.materials = [wallNegativeXMaterial]
         
-        let wallNegativeXNode = SCNNode()
+        let wallNegativeXNode = WallNode()
+        wallNegativeXNode.setWidth(width: tableLength, wallType: .negativeX)
         wallNegativeXNode.transform = SCNMatrix4MakeRotation(-Float.pi/2, 0, 1, 0)
         wallNegativeXNode.position = SCNVector3(planeAnchor.center.x - Float(tableWidth) / 2,
                                                 ballRadius,
@@ -180,7 +190,8 @@ extension MainViewController {
         wallPositiveXMaterial.diffuse.contents = UIColor.blue
         wallPositiveX.materials = [wallPositiveXMaterial]
         
-        let wallPositiveXNode = SCNNode()
+        let wallPositiveXNode = WallNode()
+        wallPositiveXNode.setWidth(width: tableLength, wallType: .positiveX)
         wallPositiveXNode.transform = SCNMatrix4MakeRotation(-Float.pi/2, 0, 1, 0)
         wallPositiveXNode.position = SCNVector3(planeAnchor.center.x + Float(tableWidth) / 2,
                                                 ballRadius,
@@ -252,13 +263,20 @@ extension MainViewController: SCNPhysicsContactDelegate {
     
     private func ballHitsWall(contact: SCNPhysicsContact) {
         var ballNode: BallNode!
+        var wallNode: WallNode!
         
         if contact.nodeA.name == ObjectCategory.motherBall.nodeName || contact.nodeA.name!.contains(ObjectCategory.targetBall.nodeName) {
             ballNode = (contact.nodeA as! BallNode)
+            wallNode = (contact.nodeB as! WallNode)
         }
         
         if contact.nodeB.name == ObjectCategory.motherBall.nodeName || contact.nodeB.name!.contains(ObjectCategory.targetBall.nodeName) {
             ballNode = (contact.nodeB as! BallNode)
+            wallNode = (contact.nodeA as! WallNode)
+        }
+        
+        if wallNode.hitsHole(contactPoint: contact.contactPoint, wallType: wallNode.wallType) {
+            ballNode.removeFromParentNode()
         }
         
         ballNode.removeAction(forKey: ballNode.name!)
@@ -317,9 +335,6 @@ extension MainViewController: SCNPhysicsContactDelegate {
         let coefficientA: Float = aHitsB ? 0.0 : 0.5
         let coefficientB: Float = aHitsB ? 0.5 : 0.0
         
-        print(aHitsB)
-        print("A: \(ballNodeA.ballSpeed) B: \(ballNodeB.ballSpeed) ")
-        
         let normalComponentAAfter = SCNVector3((normalComponentA.x * ballNodeA.ballSpeed + normalComponentB.x * ballNodeB.ballSpeed) * coefficientA,
                                               0,
                                               (normalComponentA.z * ballNodeA.ballSpeed + normalComponentB.z * ballNodeB.ballSpeed) * coefficientA)
@@ -327,9 +342,7 @@ extension MainViewController: SCNPhysicsContactDelegate {
         let reflectedBallAVelocity = SCNVector3(tangentCompoentA.x * ballNodeA.ballSpeed + normalComponentAAfter.x,
                                                 0,
                                                 tangentCompoentA.z * ballNodeA.ballSpeed + normalComponentAAfter.z)
-        print(normalComponentAAfter)
-        print(reflectedBallAVelocity)
-        
+
         let normalComponentBAfter = SCNVector3((normalComponentA.x * ballNodeA.ballSpeed + normalComponentB.x * ballNodeB.ballSpeed) * coefficientB,
                                                 0,
                                                (normalComponentA.z * ballNodeA.ballSpeed + normalComponentB.z * ballNodeB.ballSpeed) * coefficientB)
@@ -337,8 +350,6 @@ extension MainViewController: SCNPhysicsContactDelegate {
         let reflectedBallBVelocity = SCNVector3(tangentCompoentB.x * ballNodeB.ballSpeed + normalComponentBAfter.x,
                                                 0,
                                                 tangentCompoentB.z * ballNodeB.ballSpeed + normalComponentBAfter.z)
-        print(normalComponentBAfter)
-        print(reflectedBallBVelocity)
         
         if reflectedBallAVelocity.length > 0.01 {
             ballNodeA.moved(ballSpeed: reflectedBallAVelocity.length, ballDirection: reflectedBallAVelocity.normalized)
