@@ -17,7 +17,12 @@ class WallNode: SCNNode {
         
         let ratio = (contactPoint.x - minX) / (maxX - minX)
         
-        return ratio < 0.05 || ratio > 0.95 || (ratio > 0.45 && ratio < 0.55)
-   
+        if ratio < 0.05 || ratio > 0.95 { return true }
+        
+        if [WallType.negativeZ, WallType.positiveZ].contains(wallType) {
+            return (ratio > 0.45 && ratio < 0.55)
+        }
+        
+        return false
     }
 }
