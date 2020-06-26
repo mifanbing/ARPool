@@ -1,6 +1,6 @@
 import SceneKit
 
-class BallNode: SCNNode {
+class BallNode: ContactNode {
     var ballSpeed: Float = 0
     var ballDirection = SCNVector3(1, 0, 0)
     

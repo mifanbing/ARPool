@@ -1,6 +1,6 @@
 import SceneKit
 
-class WallNode: SCNNode {
+class WallNode: ContactNode {
     var width: CGFloat = 0
     var wallType: WallType = .negativeX
     
