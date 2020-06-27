@@ -399,6 +399,13 @@ extension MainViewController: SCNPhysicsContactDelegate {
         let ballNodeA = (contact.nodeA as! BallNode)
         let ballNodeB = (contact.nodeB as! BallNode)
         
+        if ballNodeA.actionKeys.isEmpty {
+            ballNodeA.ballSpeed = 0
+        }
+        if ballNodeB.actionKeys.isEmpty {
+            ballNodeB.ballSpeed = 0
+        }
+        
         if ballNodeA.actionKeys.contains(ballNodeA.name!) {
             ballNodeA.removeAction(forKey: ballNodeA.name!)
         }
@@ -407,7 +414,7 @@ extension MainViewController: SCNPhysicsContactDelegate {
         }
         
         let normal = contact.contactNormal.xzPlane.rotationByY(degree: -worldRotation)
-
+        
         if ballNodeA.ballSpeed == 0 {
             ballNodeA.ballDirection = normal.dot(vector: ballNodeB.ballDirection) > 0 ? normal : normal.negative
         }
