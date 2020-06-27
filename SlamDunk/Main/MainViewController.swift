@@ -11,6 +11,7 @@ enum WallType {
 
 class MainViewController: UIViewController {
     @IBOutlet var sceneView: ARSCNView!
+    @IBOutlet weak var resetButton: UIButton!
     
     var start: CGPoint?
     var end: CGPoint?
@@ -21,6 +22,9 @@ class MainViewController: UIViewController {
     let tableWidth: CGFloat = 0.5
     let tableLength: CGFloat = 0.3
     let holeLength: CGFloat = 0.03
+    
+    var planeNode: SCNNode?
+    var planeAnchor: ARPlaneAnchor?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -34,6 +38,9 @@ class MainViewController: UIViewController {
         sceneView.addGestureRecognizer(panGesture)
         
         sceneView.scene.physicsWorld.contactDelegate = self
+        
+        resetButton.isEnabled = false
+        resetButton.backgroundColor = .white
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -42,15 +49,28 @@ class MainViewController: UIViewController {
         let configuration = ARWorldTrackingConfiguration()
         configuration.planeDetection = .horizontal
         
-        // Run the view's session
         sceneView.session.run(configuration)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         
-        // Pause the view's session
         sceneView.session.pause()
+    }
+    
+    @IBAction func resetPressed(_ sender: Any) {
+        reset()
+    }
+    
+    private func reset() {
+        planeNode!.childNodes.forEach { node in
+            if node is BallNode {
+                node.removeFromParentNode()
+            }
+        }
+            
+        setupMotherBall(planeAnchor: planeAnchor!, node: planeNode!)
+        setupTargetBall(planeAnchor: planeAnchor!, node: planeNode!)
     }
     
     @objc func handlePan(panGesture: UIPanGestureRecognizer) {
@@ -103,6 +123,12 @@ extension MainViewController: ARSCNViewDelegate {
     
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
         guard let planeAnchor = anchor as? ARPlaneAnchor else { return }
+        
+        DispatchQueue.main.async {
+            self.resetButton.isEnabled = true
+        }
+        self.planeNode = node
+        self.planeAnchor = planeAnchor
         
         setupPlane(planeAnchor: planeAnchor, node: node)
         setupMotherBall(planeAnchor: planeAnchor, node: node)
@@ -371,6 +397,14 @@ extension MainViewController: SCNPhysicsContactDelegate {
 
         if wallNode.hitsHole(contactPoint: contact.contactPoint, wallType: wallNode.wallType) {
             ballNode.removeFromParentNode()
+            
+            if ballNode.name == ObjectCategory.motherBall.nodeName {
+                reset()
+            }
+            
+            if planeNode!.childNodes.filter({ $0 is BallNode }).count == 1 {
+                reset()
+            }
         }
         
         ballNode.removeAction(forKey: ballNode.name!)
