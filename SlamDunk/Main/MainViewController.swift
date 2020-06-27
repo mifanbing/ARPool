@@ -16,9 +16,11 @@ class MainViewController: UIViewController {
     var end: CGPoint?
     var motherBallNode: BallNode!
     let ballRadius: Float = 0.02
+    var worldRotation: Float = 0
+    
     let tableWidth: CGFloat = 0.5
     let tableLength: CGFloat = 0.3
-    var worldRotation: Float = 0
+    let holeLength: CGFloat = 0.03
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -127,9 +129,89 @@ extension MainViewController {
         
         node.addChildNode(planeNode)
         
+        //setup holes
+        let holeNegativeXNegativeZ = SCNPlane(width: holeLength, height: holeLength)
+        let holeNegativeXNegativeZMaterial = SCNMaterial()
+        holeNegativeXNegativeZMaterial.diffuse.contents = UIColor.black
+        holeNegativeXNegativeZ.materials = [holeNegativeXNegativeZMaterial]
+        
+        let holeNegativeXNegativeZNode = SCNNode()
+        holeNegativeXNegativeZNode.transform = SCNMatrix4MakeRotation(-Float.pi/2, 1, 0, 0)
+        holeNegativeXNegativeZNode.position = SCNVector3(planeAnchor.center.x - Float(tableWidth) / 2 + Float(holeLength) / 2,
+                                                         0.001,
+                                                         planeAnchor.center.z - Float(tableLength) / 2 + Float(holeLength) / 2)
+        holeNegativeXNegativeZNode.geometry = holeNegativeXNegativeZ
+        node.addChildNode(holeNegativeXNegativeZNode)
+        
+        let holeNegativeXPositiveZ = SCNPlane(width: holeLength, height: holeLength)
+        let holeNegativeXPositiveZMaterial = SCNMaterial()
+        holeNegativeXPositiveZMaterial.diffuse.contents = UIColor.black
+        holeNegativeXPositiveZ.materials = [holeNegativeXPositiveZMaterial]
+        
+        let holeNegativeXPositiveZNode = SCNNode()
+        holeNegativeXPositiveZNode.transform = SCNMatrix4MakeRotation(-Float.pi/2, 1, 0, 0)
+        holeNegativeXPositiveZNode.position = SCNVector3(planeAnchor.center.x - Float(tableWidth) / 2 + Float(holeLength) / 2,
+                                                         0.001,
+                                                         planeAnchor.center.z + Float(tableLength) / 2 - Float(holeLength) / 2)
+        holeNegativeXPositiveZNode.geometry = holeNegativeXPositiveZ
+        node.addChildNode(holeNegativeXPositiveZNode)
+        
+        let holePositiveXNegativeZ = SCNPlane(width: holeLength, height: holeLength)
+        let holePositiveXNegativeZMaterial = SCNMaterial()
+        holePositiveXNegativeZMaterial.diffuse.contents = UIColor.black
+        holePositiveXNegativeZ.materials = [holePositiveXNegativeZMaterial]
+        
+        let holePositiveXNegativeZNode = SCNNode()
+        holePositiveXNegativeZNode.transform = SCNMatrix4MakeRotation(-Float.pi/2, 1, 0, 0)
+        holePositiveXNegativeZNode.position = SCNVector3(planeAnchor.center.x + Float(tableWidth) / 2 - Float(holeLength) / 2,
+                                                         0.001,
+                                                         planeAnchor.center.z - Float(tableLength) / 2 + Float(holeLength) / 2)
+        holePositiveXNegativeZNode.geometry = holePositiveXNegativeZ
+        node.addChildNode(holePositiveXNegativeZNode)
+        
+        let holePositiveXPositiveZ = SCNPlane(width: holeLength, height: holeLength)
+        let holePositiveXPositiveZMaterial = SCNMaterial()
+        holePositiveXPositiveZMaterial.diffuse.contents = UIColor.black
+        holePositiveXPositiveZ.materials = [holePositiveXPositiveZMaterial]
+        
+        let holePositiveXPositiveZNode = SCNNode()
+        holePositiveXPositiveZNode.transform = SCNMatrix4MakeRotation(-Float.pi/2, 1, 0, 0)
+        holePositiveXPositiveZNode.position = SCNVector3(planeAnchor.center.x + Float(tableWidth) / 2 - Float(holeLength) / 2,
+                                                         0.001,
+                                                         planeAnchor.center.z + Float(tableLength) / 2 - Float(holeLength) / 2)
+        holePositiveXPositiveZNode.geometry = holePositiveXPositiveZ
+        node.addChildNode(holePositiveXPositiveZNode)
+        
+        let holeNegativeZMid = SCNPlane(width: holeLength, height: holeLength)
+        let holeNegativeZMidMaterial = SCNMaterial()
+        holeNegativeZMidMaterial.diffuse.contents = UIColor.black
+        holeNegativeZMid.materials = [holeNegativeZMidMaterial]
+        
+        let holeNegativeZMidNode = SCNNode()
+        holeNegativeZMidNode.transform = SCNMatrix4MakeRotation(-Float.pi/2, 1, 0, 0)
+        holeNegativeZMidNode.position = SCNVector3(planeAnchor.center.x - Float(holeLength) / 4,
+                                                   0.001,
+                                                   planeAnchor.center.z - Float(tableLength) / 2 + Float(holeLength) / 2)
+        holeNegativeZMidNode.geometry = holeNegativeZMid
+        node.addChildNode(holeNegativeZMidNode)
+        
+        let holePositiveZMid = SCNPlane(width: holeLength, height: holeLength)
+        let holePositiveZMidMaterial = SCNMaterial()
+        holePositiveZMidMaterial.diffuse.contents = UIColor.black
+        holePositiveZMid.materials = [holePositiveZMidMaterial]
+        
+        let holePositiveZMidNode = SCNNode()
+        holePositiveZMidNode.transform = SCNMatrix4MakeRotation(-Float.pi/2, 1, 0, 0)
+        holePositiveZMidNode.position = SCNVector3(planeAnchor.center.x - Float(holeLength) / 4,
+                                                   0.001,
+                                                   planeAnchor.center.z + Float(tableLength) / 2 - Float(holeLength) / 2)
+        holePositiveZMidNode.geometry = holePositiveZMid
+        node.addChildNode(holePositiveZMidNode)
+        
+        //setup walls
         let wallNegtiveZ = SCNPlane(width: tableWidth, height: CGFloat(ballRadius * 2))
         let wallNegativeZMaterial = SCNMaterial()
-        wallNegativeZMaterial.diffuse.contents = UIColor.blue
+        wallNegativeZMaterial.diffuse.contents = UIColor.green
         wallNegtiveZ.materials = [wallNegativeZMaterial]
         
         let wallNegativeZNode = WallNode()
@@ -148,7 +230,7 @@ extension MainViewController {
         
         let wallPositiveZ = SCNPlane(width: tableWidth, height: CGFloat(ballRadius * 2))
         let wallPositiveZMaterial = SCNMaterial()
-        wallPositiveZMaterial.diffuse.contents = UIColor.blue
+        wallPositiveZMaterial.diffuse.contents = UIColor.green
         wallPositiveZ.materials = [wallNegativeZMaterial]
         
         let wallPositiveZNode = WallNode()
@@ -167,7 +249,7 @@ extension MainViewController {
         
         let wallNegtiveX = SCNPlane(width: tableLength, height: CGFloat(ballRadius * 2))
         let wallNegativeXMaterial = SCNMaterial()
-        wallNegativeXMaterial.diffuse.contents = UIColor.blue
+        wallNegativeXMaterial.diffuse.contents = UIColor.green
         wallNegtiveX.materials = [wallNegativeXMaterial]
         
         let wallNegativeXNode = WallNode()
@@ -188,7 +270,7 @@ extension MainViewController {
         
         let wallPositiveX = SCNPlane(width: tableLength, height: CGFloat(ballRadius * 2))
         let wallPositiveXMaterial = SCNMaterial()
-        wallPositiveXMaterial.diffuse.contents = UIColor.blue
+        wallPositiveXMaterial.diffuse.contents = UIColor.green
         wallPositiveX.materials = [wallPositiveXMaterial]
         
         let wallPositiveXNode = WallNode()
@@ -293,7 +375,7 @@ extension MainViewController: SCNPhysicsContactDelegate {
         
         ballNode.removeAction(forKey: ballNode.name!)
         
-        guard ballNode.ballSpeed > 0.01 else {
+        guard ballNode.ballSpeed > 0.0001 else {
             ballNode.moved(ballSpeed: 0, ballDirection: SCNVector3(1, 0, 0))
             return
         }
@@ -358,7 +440,7 @@ extension MainViewController: SCNPhysicsContactDelegate {
                                                 0,
                                                 tangentCompoentB.z * ballNodeB.ballSpeed + normalComponentBAfter.z)
         
-        if reflectedBallAVelocity.length > 0.01 {
+        if reflectedBallAVelocity.length > 0.0001 {
             ballNodeA.moved(ballSpeed: reflectedBallAVelocity.length, ballDirection: reflectedBallAVelocity.normalized)
             ballNodeA.runAction(SCNAction.moveBy(x: CGFloat(reflectedBallAVelocity.x * 3),
                                                  y: 0,
@@ -368,7 +450,7 @@ extension MainViewController: SCNPhysicsContactDelegate {
             ballNodeA.moved(ballSpeed: 0, ballDirection: SCNVector3(1, 0, 0))
         }
         
-        if reflectedBallBVelocity.length > 0.01 {
+        if reflectedBallBVelocity.length > 0.0001 {
             ballNodeB.moved(ballSpeed: reflectedBallBVelocity.length, ballDirection: reflectedBallBVelocity.normalized)
             ballNodeB.runAction(SCNAction.moveBy(x: CGFloat(reflectedBallBVelocity.x * 3),
                                                  y: 0,

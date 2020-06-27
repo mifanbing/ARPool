@@ -17,10 +17,16 @@ class WallNode: ContactNode {
         
         let ratio = (contactPoint.x - minX) / (maxX - minX)
         
-        if ratio < 0.05 || ratio > 0.95 { return true }
+        switch wallType {
+        case .negativeX, .positiveX:
+            if ratio < 0.06 || ratio > 0.94 { return true }
+        case .negativeZ, .positiveZ:
+            if ratio < 0.1 || ratio > 0.9 { return true }
+        }
+        
         
         if [WallType.negativeZ, WallType.positiveZ].contains(wallType) {
-            return (ratio > 0.45 && ratio < 0.55)
+            return (ratio > 0.47 && ratio < 0.53)
         }
         
         return false
