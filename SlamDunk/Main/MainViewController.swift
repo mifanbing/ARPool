@@ -16,6 +16,7 @@ class MainViewController: UIViewController {
     var start: CGPoint?
     var end: CGPoint?
     var motherBallNode: BallNode!
+    var arrowNode = SCNNode()
     let ballRadius: Float = 0.02
     var worldRotation: Float = 0
     
@@ -80,7 +81,44 @@ class MainViewController: UIViewController {
             start = panGesture.translation(in: view)
         }
         
+        if panGesture.state == .changed {
+            end = panGesture.translation(in: view)
+          
+            guard let startPoint = start, let endPoint = end else { return }
+            
+            guard let start3D = sceneView.hitTest(startPoint, types: .existingPlane).first,
+                let end3D = sceneView.hitTest(endPoint, types: .existingPlane).first else { return }
+            
+            let end3DTranslation = end3D.worldTransform.columns.3
+            let start3DTranslation = start3D.worldTransform.columns.3
+            let startToEnd = SCNVector3(end3DTranslation.x - start3DTranslation.x,
+                                        0,
+                                        end3DTranslation.z - start3DTranslation.z)
+            
+            let column0 = start3D.worldTransform.columns.0
+            worldRotation = atan(column0[2] / column0[0])
+            let ballDirection = startToEnd.normalized.rotationByY(degree: -worldRotation)
+            let arrowAngle = atan(ballDirection.z / ballDirection.x)
+            
+            let arrow = SCNPlane(width: 0.16, height: 0.04)
+            let arrowMaterial = SCNMaterial()
+            arrowMaterial.diffuse.contents = UIColor.blue
+            arrow.materials = [arrowMaterial]
+            
+            //SCNMatrix4MakeRotation(-arrowAngle, 0, 1, 0) SCNMatrix4MakeRotation(-Float.pi / 2, 1, 0, 0)
+            arrowNode.transform = SCNMatrix4Mult(SCNMatrix4MakeRotation(-Float.pi / 2, 1, 0, 0), SCNMatrix4MakeRotation(-arrowAngle, 0, 1, 0))
+            arrowNode.position = SCNVector3(0,
+                                            0,
+                                            0)
+            arrowNode.geometry = arrow
+            
+            if !motherBallNode.childNodes.contains(arrowNode) {
+                motherBallNode.addChildNode(arrowNode)
+            }
+        }
+        
         if panGesture.state == .ended {
+            arrowNode.removeFromParentNode()
             end = panGesture.translation(in: view)
             
             guard let startPoint = start, let endPoint = end else { return }
