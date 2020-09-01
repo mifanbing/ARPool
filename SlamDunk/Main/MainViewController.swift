@@ -98,18 +98,20 @@ class MainViewController: UIViewController {
             let column0 = start3D.worldTransform.columns.0
             worldRotation = atan(column0[2] / column0[0])
             let ballDirection = startToEnd.normalized.rotationByY(degree: -worldRotation)
-            let arrowAngle = atan(ballDirection.z / ballDirection.x)
+            var arrowAngle = atan(ballDirection.z / ballDirection.x)
+            if ballDirection.x < 0 {
+                arrowAngle = arrowAngle + Float.pi
+            }
             
             let arrow = SCNPlane(width: 0.16, height: 0.04)
             let arrowMaterial = SCNMaterial()
             arrowMaterial.diffuse.contents = UIColor.blue
             arrow.materials = [arrowMaterial]
             
-            //SCNMatrix4MakeRotation(-arrowAngle, 0, 1, 0) SCNMatrix4MakeRotation(-Float.pi / 2, 1, 0, 0)
             arrowNode.transform = SCNMatrix4Mult(SCNMatrix4MakeRotation(-Float.pi / 2, 1, 0, 0), SCNMatrix4MakeRotation(-arrowAngle, 0, 1, 0))
-            arrowNode.position = SCNVector3(0,
-                                            0,
-                                            0)
+            arrowNode.position = SCNVector3(0.08 * cos(arrowAngle),
+                                            -ballRadius + 0.01,
+                                            0.08 * sin(arrowAngle))
             arrowNode.geometry = arrow
             
             if !motherBallNode.childNodes.contains(arrowNode) {
