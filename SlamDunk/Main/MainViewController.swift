@@ -373,10 +373,11 @@ extension MainViewController {
     }
     
     private func setupTargetBall(planeAnchor: ARPlaneAnchor, node: SCNNode) {
+        let colors: [UIColor] = [.cyan, .purple, .yellow, .red, .magenta, .brown]
         for i in 1...6 {
             let targetBall = SCNSphere(radius: CGFloat(ballRadius))
             let targetBallMaterial = SCNMaterial()
-            targetBallMaterial.diffuse.contents = UIColor.red
+            targetBallMaterial.diffuse.contents = colors[i - 1]
             targetBall.materials = [targetBallMaterial]
             
             let (xOffet, zOffset) = Int.offsetFromFirst(index: i, space: ballRadius * 2.5)
@@ -389,6 +390,16 @@ extension MainViewController {
             targetBallNode.name = ObjectCategory.targetBall.nodeName + "\(i)"
             
             node.addChildNode(targetBallNode)
+            
+            let text = SCNText(string: "\(i)", extrusionDepth: 0)
+            text.font = UIFont(name: "Arial", size: 0.08)
+            text.isWrapped = true
+            
+            let textNode = SCNNode()
+            textNode.geometry = text
+            textNode.position = SCNVector3(0, -1, 0)
+            
+            targetBallNode.addChildNode(textNode)
         }
     }
 }
