@@ -103,15 +103,15 @@ class MainViewController: UIViewController {
                 arrowAngle = arrowAngle + Float.pi
             }
             
-            let arrow = SCNPlane(width: 0.16, height: 0.04)
+            let arrow = SCNShape.arrow()//SCNPlane(width: 0.16, height: 0.04)
             let arrowMaterial = SCNMaterial()
             arrowMaterial.diffuse.contents = UIColor.blue
             arrow.materials = [arrowMaterial]
             
             arrowNode.transform = SCNMatrix4Mult(SCNMatrix4MakeRotation(-Float.pi / 2, 1, 0, 0), SCNMatrix4MakeRotation(-arrowAngle, 0, 1, 0))
-            arrowNode.position = SCNVector3(0.08 * cos(arrowAngle),
+            arrowNode.position = SCNVector3(0.02 * cos(arrowAngle),
                                             -ballRadius + 0.01,
-                                            0.08 * sin(arrowAngle))
+                                            0.02 * sin(arrowAngle))
             arrowNode.geometry = arrow
             
             if !motherBallNode.childNodes.contains(arrowNode) {
