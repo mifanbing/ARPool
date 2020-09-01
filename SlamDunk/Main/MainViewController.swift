@@ -196,83 +196,111 @@ extension MainViewController {
         node.addChildNode(planeNode)
         
         //setup holes
-        let holeNegativeXNegativeZ = SCNPlane(width: holeLength, height: holeLength)
-        let holeNegativeXNegativeZMaterial = SCNMaterial()
-        holeNegativeXNegativeZMaterial.diffuse.contents = UIColor.black
-        holeNegativeXNegativeZ.materials = [holeNegativeXNegativeZMaterial]
+        //Material pattern
+        let holeMaterial = SCNMaterial()
+        holeMaterial.diffuse.contents = UIColor.black
         
-        let holeNegativeXNegativeZNode = SCNNode()
-        holeNegativeXNegativeZNode.transform = SCNMatrix4MakeRotation(-Float.pi/2, 1, 0, 0)
-        holeNegativeXNegativeZNode.position = SCNVector3(planeAnchor.center.x - Float(tableWidth) / 2 + Float(holeLength) / 2,
-                                                         0.001,
-                                                         planeAnchor.center.z - Float(tableLength) / 2 + Float(holeLength) / 2)
-        holeNegativeXNegativeZNode.geometry = holeNegativeXNegativeZ
-        node.addChildNode(holeNegativeXNegativeZNode)
+        //hole1
+        let holeNegXPosZ = SCNShape.quadCircle(radius: 0.03)
+        holeNegXPosZ.materials = [holeMaterial]
         
-        let holeNegativeXPositiveZ = SCNPlane(width: holeLength, height: holeLength)
-        let holeNegativeXPositiveZMaterial = SCNMaterial()
-        holeNegativeXPositiveZMaterial.diffuse.contents = UIColor.black
-        holeNegativeXPositiveZ.materials = [holeNegativeXPositiveZMaterial]
+        let nodeNegXPosZ = SCNNode()
+        nodeNegXPosZ.geometry = holeNegXPosZ
+        nodeNegXPosZ.transform = SCNMatrix4MakeRotation(-Float.pi/2, 1, 0, 0)
+        nodeNegXPosZ.position = SCNVector3(planeAnchor.center.x - Float(tableWidth) / 2,
+                                       0.001,
+                                       planeAnchor.center.z + Float(tableLength) / 2)
+
+        node.addChildNode(nodeNegXPosZ)
         
-        let holeNegativeXPositiveZNode = SCNNode()
-        holeNegativeXPositiveZNode.transform = SCNMatrix4MakeRotation(-Float.pi/2, 1, 0, 0)
-        holeNegativeXPositiveZNode.position = SCNVector3(planeAnchor.center.x - Float(tableWidth) / 2 + Float(holeLength) / 2,
-                                                         0.001,
-                                                         planeAnchor.center.z + Float(tableLength) / 2 - Float(holeLength) / 2)
-        holeNegativeXPositiveZNode.geometry = holeNegativeXPositiveZ
-        node.addChildNode(holeNegativeXPositiveZNode)
+        //hole2
+        let holePosXPosZ = SCNShape.quadCircle(radius: 0.03)
+        holePosXPosZ.materials = [holeMaterial]
         
-        let holePositiveXNegativeZ = SCNPlane(width: holeLength, height: holeLength)
-        let holePositiveXNegativeZMaterial = SCNMaterial()
-        holePositiveXNegativeZMaterial.diffuse.contents = UIColor.black
-        holePositiveXNegativeZ.materials = [holePositiveXNegativeZMaterial]
+        let nodePosXPosZ = SCNNode()
+        nodePosXPosZ.geometry = holePosXPosZ
+        nodePosXPosZ.transform = SCNMatrix4Mult(SCNMatrix4MakeRotation(Float.pi/2, 0, 0, 1), SCNMatrix4MakeRotation(-Float.pi/2, 1, 0, 0))
+        nodePosXPosZ.position = SCNVector3(planeAnchor.center.x + Float(tableWidth) / 2,
+                                       0.001,
+                                       planeAnchor.center.z + Float(tableLength) / 2)
+
+        node.addChildNode(nodePosXPosZ)
         
-        let holePositiveXNegativeZNode = SCNNode()
-        holePositiveXNegativeZNode.transform = SCNMatrix4MakeRotation(-Float.pi/2, 1, 0, 0)
-        holePositiveXNegativeZNode.position = SCNVector3(planeAnchor.center.x + Float(tableWidth) / 2 - Float(holeLength) / 2,
-                                                         0.001,
-                                                         planeAnchor.center.z - Float(tableLength) / 2 + Float(holeLength) / 2)
-        holePositiveXNegativeZNode.geometry = holePositiveXNegativeZ
-        node.addChildNode(holePositiveXNegativeZNode)
+        //hole3
+        let holePosXNegZ = SCNShape.quadCircle(radius: 0.03)
+        holePosXNegZ.materials = [holeMaterial]
         
-        let holePositiveXPositiveZ = SCNPlane(width: holeLength, height: holeLength)
-        let holePositiveXPositiveZMaterial = SCNMaterial()
-        holePositiveXPositiveZMaterial.diffuse.contents = UIColor.black
-        holePositiveXPositiveZ.materials = [holePositiveXPositiveZMaterial]
+        let nodePosXNegZ = SCNNode()
+        nodePosXNegZ.geometry = holePosXNegZ
+        nodePosXNegZ.transform = SCNMatrix4Mult(SCNMatrix4MakeRotation(-Float.pi/2, 1, 0, 0), SCNMatrix4MakeRotation(-Float.pi, 0, 1, 0))
+        nodePosXNegZ.position = SCNVector3(planeAnchor.center.x + Float(tableWidth) / 2,
+                                       0.001,
+                                       planeAnchor.center.z - Float(tableLength) / 2)
+
+        node.addChildNode(nodePosXNegZ)
         
-        let holePositiveXPositiveZNode = SCNNode()
-        holePositiveXPositiveZNode.transform = SCNMatrix4MakeRotation(-Float.pi/2, 1, 0, 0)
-        holePositiveXPositiveZNode.position = SCNVector3(planeAnchor.center.x + Float(tableWidth) / 2 - Float(holeLength) / 2,
-                                                         0.001,
-                                                         planeAnchor.center.z + Float(tableLength) / 2 - Float(holeLength) / 2)
-        holePositiveXPositiveZNode.geometry = holePositiveXPositiveZ
-        node.addChildNode(holePositiveXPositiveZNode)
+        //hole4
+        let holeNegXNegZ = SCNShape.quadCircle(radius: 0.03)
+        holeNegXNegZ.materials = [holeMaterial]
         
-        let holeNegativeZMid = SCNPlane(width: holeLength, height: holeLength)
-        let holeNegativeZMidMaterial = SCNMaterial()
-        holeNegativeZMidMaterial.diffuse.contents = UIColor.black
-        holeNegativeZMid.materials = [holeNegativeZMidMaterial]
+        let nodeNegXNegZ = SCNNode()
+        nodeNegXNegZ.geometry = holePosXNegZ
+        nodeNegXNegZ.transform = SCNMatrix4Mult(SCNMatrix4MakeRotation(-Float.pi/2, 1, 0, 0), SCNMatrix4MakeRotation(-Float.pi/2, 0, 1, 0))
+        nodeNegXNegZ.position = SCNVector3(planeAnchor.center.x - Float(tableWidth) / 2,
+                                       0.001,
+                                       planeAnchor.center.z - Float(tableLength) / 2)
+
+        node.addChildNode(nodeNegXNegZ)
         
-        let holeNegativeZMidNode = SCNNode()
-        holeNegativeZMidNode.transform = SCNMatrix4MakeRotation(-Float.pi/2, 1, 0, 0)
-        holeNegativeZMidNode.position = SCNVector3(planeAnchor.center.x - Float(holeLength) / 4,
-                                                   0.001,
-                                                   planeAnchor.center.z - Float(tableLength) / 2 + Float(holeLength) / 2)
-        holeNegativeZMidNode.geometry = holeNegativeZMid
-        node.addChildNode(holeNegativeZMidNode)
+        //hole5
+        let holeNegZLeft = SCNShape.quadCircle(radius: 0.03)
+        holeNegZLeft.materials = [holeMaterial]
         
-        let holePositiveZMid = SCNPlane(width: holeLength, height: holeLength)
-        let holePositiveZMidMaterial = SCNMaterial()
-        holePositiveZMidMaterial.diffuse.contents = UIColor.black
-        holePositiveZMid.materials = [holePositiveZMidMaterial]
+        let nodeNegZLeft = SCNNode()
+        nodeNegZLeft.geometry = holeNegZLeft
+        nodeNegZLeft.transform = SCNMatrix4Mult(SCNMatrix4MakeRotation(-Float.pi/2, 1, 0, 0), SCNMatrix4MakeRotation(-Float.pi/2, 0, 1, 0))
+        nodeNegZLeft.position = SCNVector3(planeAnchor.center.x,
+                                       0.001,
+                                       planeAnchor.center.z - Float(tableLength) / 2)
+
+        node.addChildNode(nodeNegZLeft)
         
-        let holePositiveZMidNode = SCNNode()
-        holePositiveZMidNode.transform = SCNMatrix4MakeRotation(-Float.pi/2, 1, 0, 0)
-        holePositiveZMidNode.position = SCNVector3(planeAnchor.center.x - Float(holeLength) / 4,
-                                                   0.001,
-                                                   planeAnchor.center.z + Float(tableLength) / 2 - Float(holeLength) / 2)
-        holePositiveZMidNode.geometry = holePositiveZMid
-        node.addChildNode(holePositiveZMidNode)
+        let holeNegZRight = SCNShape.quadCircle(radius: 0.03)
+        holeNegZRight.materials = [holeMaterial]
+        
+        let nodeNegZRight = SCNNode()
+        nodeNegZRight.geometry = holeNegZRight
+        nodeNegZRight.transform = SCNMatrix4Mult(SCNMatrix4MakeRotation(-Float.pi/2, 1, 0, 0), SCNMatrix4MakeRotation(-Float.pi, 0, 1, 0))
+        nodeNegZRight.position = SCNVector3(planeAnchor.center.x,
+                                       0.001,
+                                       planeAnchor.center.z - Float(tableLength) / 2)
+
+        node.addChildNode(nodeNegZRight)
+        
+        //hole6
+        let holePosZLeft = SCNShape.quadCircle(radius: 0.03)
+        holePosZLeft.materials = [holeMaterial]
+        
+        let nodePosZLeft = SCNNode()
+        nodePosZLeft.geometry = holePosZLeft
+        nodePosZLeft.transform = SCNMatrix4MakeRotation(-Float.pi/2, 1, 0, 0)
+        nodePosZLeft.position = SCNVector3(planeAnchor.center.x,
+                                       0.001,
+                                       planeAnchor.center.z + Float(tableLength) / 2)
+
+        node.addChildNode(nodePosZLeft)
+        
+        let holePosZRight = SCNShape.quadCircle(radius: 0.03)
+        holePosZRight.materials = [holeMaterial]
+        
+        let nodePosZRight = SCNNode()
+        nodePosZRight.geometry = holePosZRight
+        nodePosZRight.transform = SCNMatrix4Mult(SCNMatrix4MakeRotation(Float.pi/2, 0, 0, 1), SCNMatrix4MakeRotation(-Float.pi/2, 1, 0, 0))
+        nodePosZRight.position = SCNVector3(planeAnchor.center.x,
+                                       0.001,
+                                       planeAnchor.center.z + Float(tableLength) / 2)
+
+        node.addChildNode(nodePosZRight)
         
         //setup walls
         let wallNegtiveZ = SCNPlane(width: tableWidth, height: CGFloat(ballRadius * 2))
